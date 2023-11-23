@@ -9,6 +9,8 @@ CREATE_USERS_TABLE = ("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, 
 
 INSERT_NEW_USER = ("INSERT INTO users(login, password, manager) VALUES(%s, %s, %s)")
 
+GET_USER = ("SELECT * FROM users WHERE login=%s")
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -16,10 +18,14 @@ CORS(app, supports_credentials=True)
 url = os.getenv("DATABASE_URL")
 connection = psycopg2.connect(url)
 
+def get_user(email):
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(GET_USER, (email,))
+            user = cursor.fetchone()
+    
+    return user
 
-@app.get("/users")
-def get_users():
-    return "Hello"
 
 @app.post("/users/signup")
 def add_user():
